@@ -24,6 +24,7 @@ provides the views, functions and procedures with all columns and parameter in a
 ## Example prompt
 
 **prompt**: 
+  * _lege weitere 20 Kunden an, die eine Email aus Nachname.Vorname und einer bekannten Top-Level Domain besitzen. Die Straßen- und Ortsnamen können Umlaute besitzen._
   * _gib mir die 10 zuletzt angelegten Kunden als Tabelle_
 
 **answer**:
@@ -52,3 +53,5 @@ Hier sind die 10 zuletzt angelegten Kunden:
 | 35 | Lea Krüger | krueger.lea@dialoghaus.com | Böttcherstraße 8, 28195 Bremen |
 
 Hinweis: `Id 44` ist der zuvor versehentlich angelegte Testdatensatz.
+
+**⚠️ Attention:** This address list was generated randomly. The names and addresses are fictitious.
