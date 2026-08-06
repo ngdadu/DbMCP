@@ -1,0 +1,54 @@
+echo the text "hello mcp!"
+
+----
+
+please create a new customer Andy Eber in Adlerstr. 12, 12345 Berlin
+
+----
+
+change Email for customer Andy Eber to andy@eber.de
+
+----
+
+lege 20 neuen Kunden an, die einen beliebigen deutschen Nachnamen, Vornamen haben. Die Email-Adressen sollen aus Nachname.Vorname@dbmcp.de sein. Die Adressen sind zufällige Strassennamen, Hausnummer deutschen Postleitzahl und Orten sein.
+
+----
+
+lege weitere 20 Kunden an, die eine Email aus Nachname.Vorname und einer bekannten Top-Level Domain besitzen. Die Straßen- und Ortsnamen können Umlaute besitzen.
+
+----
+
+zeige mir die ersten 10 Kunden in Berlin als Tabelle
+
+----
+
+ändere die Email von Tim Weber mit der Domäne @softwareone.com
+
+----
+
+gib mir die 10 zuletzt angelegten Kunden als Tabelle
+
+> Ich hole jetzt die 10 zuletzt angelegten Kunden über die höchste `Id` ab und formatiere das Ergebnis als Tabelle.
+
+Ran `view_all_customers` 
+Completed with input: {
+  "Top": 10,
+  "Where": "1=1 ORDER BY Id DESC"
+}
+
+Hier sind die 10 zuletzt angelegten Kunden:
+
+| Id | Name | Email | Address |
+|---:|---|---|---|
+| 44 | Health Check Noop | health.check.noop@example.invalid | N/A |
+| 43 | Julia Keller | keller.julia@postservice.eu | Domstraße 12, 50668 Köln |
+| 42 | Sebastian Vogel | vogel.sebastian@bürgerforum.org | Prinzenstraße 16, 47051 Duisburg |
+| 41 | Mia Schäfer | schaefer.mia@direktnetz.net | Breite Straße 74, 18055 Rostock |
+| 40 | Tim Weber | weber.tim@softwareone.com | Jakobstraße 30, 93047 Regensburg |
+| 39 | Laura Werner | werner.laura@rheinpost.de | Theodor-Heuss-Ring 18, 24103 Kiel |
+| 38 | Niklas Schmitt | schmitt.niklas@servicepunkt.eu | Marktplatz 5, 90403 Nürnberg |
+| 37 | Hannah Zimmermann | zimmermann.hannah@stadtverein.org | Bahnhofstraße 62, 45127 Essen |
+| 36 | David Hartmann | hartmann.david@infobrief.net | Ludwigstraße 45, 80539 München |
+| 35 | Lea Krüger | krueger.lea@dialoghaus.com | Böttcherstraße 8, 28195 Bremen |
+
+Hinweis: `Id 44` ist der zuvor versehentlich angelegte Testdatensatz.
