@@ -84,6 +84,8 @@ public static class SqlTools
 
     private static async Task<McpServerPrimitiveCollection<McpServerTool>> RetrieveMcpToolsInDb(SqlService sqlService)
     {
+        var whereTips = string.Join(", ", SqlService.SQL_KEYWORDS_AFTER_WHERE
+            .Select(k => $"`{k}`"));
         var tools = new McpServerPrimitiveCollection<McpServerTool>();
 
         foreach (var view in await sqlService.GetViews())
@@ -101,7 +103,13 @@ public static class SqlTools
                      Name = "Where",
                      DataType = "nvarchar",
                      MaxLength = -1,
-                     Description = "SQL WHERE clause to filter the results"
+                     Description = $"""
+                        SQL WHERE clause to filter the results
+                            - The view will be aliased as `{SqlService.VIEW_ALIAS}` in the SQL query. Using the view columns in the WHERE clause should be prefixed with `{SqlService.VIEW_ALIAS}.` (e.g. `{SqlService.VIEW_ALIAS}.[ColumnName] = 123`).
+                            - If the clause starts with a SQL keyword (e.g. {whereTips}), 
+                              the keyword will be used as-is without prepending a `WHERE` keyword.
+                            - If the clause does not start with a SQL keyword, a `WHERE` keyword will be prepended to the clause automatically.
+                        """
                 }
             };
             var viewTool = McpServerTool.Create(

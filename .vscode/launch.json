@@ -1,0 +1,57 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DbMCP: Launch (project, stdio)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "preLaunchTask": "DbMCP: build",
+      "stopAtEntry": false,
+      "justMyCode": true,
+      "env": {
+        "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
+        "DBMCP_SCHEMA": "mcp"
+      }
+    },
+    {
+      "name": "DbMCP: Launch (built dll, stdio)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.dll"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "preLaunchTask": "DbMCP: build",
+      "stopAtEntry": false,
+      "justMyCode": true,
+      "env": {
+        "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
+        "DBMCP_SCHEMA": "mcp",
+        "DBMCP_INSTANCE_NAME": "McpCRM.Prebuilt"
+      }
+    },
+    {
+      "name": "DbMCP: Attach to running process",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "justMyCode": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "DbMCP: Start then attach",
+      "configurations": [
+        "DbMCP: Launch (project, stdio)",
+        "DbMCP: Attach to running process"
+      ],
+      "stopAll": true
+    }
+  ]
+}

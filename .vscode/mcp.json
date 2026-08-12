@@ -16,10 +16,8 @@
     },
     "dbmcp-built": {
       "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.dll"
-      ],
+      "command": "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.exe",
+      "args": [],
       "cwd": "${workspaceFolder}",
       "env": {
         "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",

@@ -309,6 +309,12 @@ public class SqlService
         return await ExecuteView(view, condition);
     }
 
+    public const string VIEW_ALIAS = "vw";
+    public static readonly List<string> SQL_KEYWORDS_AFTER_WHERE = new List<string>
+    {
+        "WHERE", "GROUP", "ORDER", "INNER", "LEFT", "RIGHT", "FULL", "NOT", "EXISTS", 
+        "APPLY", "UNION", "INTERSECT", "EXCEPT", "CROSS", "OUTER", "JOIN"
+    };
     public async Task<string> ExecuteView(SqlDataObject view, Dictionary<string, object?>? arguments)
     {
         var topLimit = 0;
@@ -319,12 +325,14 @@ public class SqlService
         var whereClause = arguments is not null && arguments.TryGetValue("Where", out var whereValue) ? $"{whereValue}" : null;
 
         using var connection = OpenConnection();
-        var columns = view.DataOutput.Select(p => $"[{p.Name}]").ToList();
+        var columns = view.DataOutput.Select(p => $"{VIEW_ALIAS}.[{p.Name}]").ToList();
         var topClause = topLimit > 0 ? $"TOP ({topLimit})" : string.Empty;
-        var sql = $"SELECT {topClause} {string.Join(", ", columns)} FROM [{Schema}].[{view.Name}]";
+        var sql = $"SELECT {topClause} {string.Join(", ", columns)} FROM [{Schema}].[{view.Name}] AS {VIEW_ALIAS}";
         if (!string.IsNullOrWhiteSpace(whereClause))
         {
-            sql += $" WHERE {whereClause}";
+            var prefix = SQL_KEYWORDS_AFTER_WHERE.Any(keyword => whereClause.TrimStart().StartsWith(keyword, StringComparison.OrdinalIgnoreCase))
+                ? "" : "WHERE ";
+            sql += $" {prefix}{whereClause}";
         }
         using var rdr = await connection.QueryData(sql);
         return rdr.ToJson();

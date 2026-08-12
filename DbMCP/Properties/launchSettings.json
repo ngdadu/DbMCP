@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DbMCP": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
+        "DBMCP_SCHEMA": "mcp"
+      }
+    },
+    "DbMCP.Prebuilt": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
+        "DBMCP_SCHEMA": "mcp",
+        "DBMCP_INSTANCE_NAME": "McpCRM.Prebuilt"
+      }
+    }
+  }
+}
