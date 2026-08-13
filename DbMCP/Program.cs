@@ -1,48 +1,70 @@
 ﻿using DbMCP.Tools;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Server;
 
-var builder = Host.CreateApplicationBuilder(args);
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole(options =>
-{
-    // stdout is reserved for the MCP stdio protocol, so log to stderr
-    options.LogToStandardErrorThreshold = LogLevel.Trace;
-});
-
+var useHttpTransport = bool.TryParse(Environment.GetEnvironmentVariable("DBMCP_HTTP"), out var useHttp) && useHttp;
 var sqlOptions = await SqlTools.BuildServerOptions();
-builder.Services
-    //.AddMcpServer()
-    .AddMcpServer(options =>
+
+if (useHttpTransport)
+{
+    var builder = WebApplication.CreateBuilder(args);
+    ConfigureLogging(builder.Logging, LogLevel.Information);
+    ConfigureMcpServer(builder.Services, sqlOptions).WithHttpTransport();
+
+    var app = builder.Build();
+    app.MapMcp("/mcp");
+    app.Lifetime.ApplicationStarted.Register(() =>
+        app.Logger.LogInformation("DbMCP HTTP endpoint listening at {McpEndpoints}",
+            string.Join(", ", app.Urls.Select(address => $"{address.TrimEnd('/')}/mcp"))));
+    await app.RunAsync();
+}
+else
+{
+    var builder = Host.CreateApplicationBuilder(args);
+    ConfigureLogging(builder.Logging, LogLevel.Trace);
+    ConfigureMcpServer(builder.Services, sqlOptions).WithStdioServerTransport();
+
+    await builder.Build().RunAsync();
+}
+
+static void ConfigureLogging(ILoggingBuilder logging, LogLevel level)
+{
+    logging.ClearProviders();
+    logging.AddConsole(options =>
     {
-        options.ServerInfo = sqlOptions.ServerInfo;
-        // this line make only tools from Db available: options.ToolCollection = sqlOptions.ToolCollection;
-        // add all tools from assembly and then add the Db tools to the collection
-        options.ToolCollection ??= new ModelContextProtocol.Server.McpServerPrimitiveCollection<ModelContextProtocol.Server.McpServerTool>();
-        if (sqlOptions.ToolCollection is not null)
+        options.LogToStandardErrorThreshold = level;
+    });
+    LogWriter.MaxLogLevel = level;
+}
+
+static IMcpServerBuilder ConfigureMcpServer(IServiceCollection services, McpServerOptions sqlOptions)
+{
+    return services
+        .AddMcpServer(options =>
         {
-            foreach (var tool in sqlOptions.ToolCollection)
+            options.ServerInfo = sqlOptions.ServerInfo;
+            options.ToolCollection ??= new McpServerPrimitiveCollection<McpServerTool>();
+            if (sqlOptions.ToolCollection is not null)
             {
-                options.ToolCollection.Add(tool);
+                foreach (var tool in sqlOptions.ToolCollection)
+                {
+                    options.ToolCollection.Add(tool);
+                }
             }
         }
-    })
-    .WithStdioServerTransport()
-    .WithToolsFromAssembly()
-    .WithRequestFilters(filterBuilder =>
-    {
-        // https://www.youtube.com/watch?v=qRUjI42zmaM
-        filterBuilder.AddListToolsFilter(next
-            => async (context, request) =>
+        )
+        .WithToolsFromAssembly()
+        .WithRequestFilters(filterBuilder =>
         {
-            // Custom logic before listing tools
-            var result = await next(context, request);
-            // Custom logic after listing tools - may be filter out not allowed tools in result.Tools
-            return result;
+            filterBuilder.AddListToolsFilter(next
+                => async (context, request) =>
+            {
+                var result = await next(context, request);
+                return result;
+            });
         });
-    });
-
-await builder.Build().RunAsync();
+}
 

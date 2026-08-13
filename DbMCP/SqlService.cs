@@ -32,18 +32,18 @@ public class SqlService
             InstanceName = instanceName;
         }
     }
-    public SqlConnection OpenConnection()
+    public async Task<SqlConnection> OpenConnection()
     {
         var conn = new SqlConnection(ConnectionString);
-        conn.Open();
-        Console.Error.WriteLine($"Opened connection to database [{conn.Database}] on server [{conn.DataSource}] for [{InstanceName}]");
+        await conn.OpenAsync();
+        await LogWriter.WriteTraceAsync($"Opened connection to database [{conn.Database}] on server [{conn.DataSource}] for [{InstanceName}]");
         return conn;
     }
 
     public async Task<string> GetDatabaseDescription()
     {
         var asm = Assembly.GetExecutingAssembly().GetName();
-        using (var connection = OpenConnection())
+        using (var connection = await OpenConnection())
         {
             string commandText = $"""
                 SELECT CAST(value AS NVARCHAR(MAX)) AS Value                
@@ -57,14 +57,14 @@ public class SqlService
                 .Replace("%APPVERSION%", asm.Version?.ToString() ?? "1.0.0")
                 .Replace("%INSTANCE%", InstanceName)
                 .Replace("%SCHEMA%", Schema).Trim();
-            await Console.Error.WriteLineAsync($"Database description: {result}");
+            await LogWriter.WriteTraceAsync($"Database description: {result}");
             return result;
         }
     }
     public async Task<string> GetDatabaseTitle()
     {
         var asm = Assembly.GetExecutingAssembly().GetName();
-        using (var connection = OpenConnection())
+        using (var connection = await OpenConnection())
         {
             string commandText = $"""
                 SELECT CAST(value AS NVARCHAR(MAX)) AS Value                
@@ -78,14 +78,14 @@ public class SqlService
                 .Replace("%APPVERSION%", asm.Version?.ToString() ?? "1.0.0")
                 .Replace("%INSTANCE%", InstanceName)
                 .Replace("%SCHEMA%", Schema).Trim();
-            await Console.Error.WriteLineAsync($"Database title: {result}");
+            await LogWriter.WriteInfoAsync($"Database title: {result}");
             return result;
         }
     }
     public async Task<IList<SqlDataObject>> GetViews()
     {
         var result = new List<SqlDataObject>();
-        using (var connection = OpenConnection())
+        using (var connection = await OpenConnection())
         {
             string commandTextViews = """
                     SELECT
@@ -137,14 +137,14 @@ public class SqlService
                 }
             }
         }
-        await Console.Error.WriteLineAsync($"Found {result.Count} views in schema [{Schema}]");
+        await LogWriter.WriteInfoAsync($"Found {result.Count} views in schema [{Schema}]");
         return result;
     }
 
     public async Task<IEnumerable<SqlCodeObject>> GetProcedures()
     {
         var result = new List<SqlCodeObject>();
-        using (var connection = OpenConnection())
+        using (var connection = await OpenConnection())
         {
             string commandTextProcedures = """
                 SELECT 
@@ -220,14 +220,14 @@ public class SqlService
                 }
             }
         }
-        await Console.Error.WriteLineAsync($"Found {result.Count} procedures in schema [{Schema}]");
+        await LogWriter.WriteInfoAsync($"Found {result.Count} procedures in schema [{Schema}]");
         return result;
     }
 
     public async Task<IList<SqlCodeObject>> GetFunctions()
     {
         var result = new List<SqlCodeObject>();
-        using (var connection = OpenConnection())
+        using (var connection = await OpenConnection())
         {
             string commandTextFunctions = """
                 SELECT
@@ -299,7 +299,7 @@ public class SqlService
                 }
             }
         }
-        await Console.Error.WriteLineAsync($"Found {result.Count} functions in schema [{Schema}]");
+        await LogWriter.WriteInfoAsync($"Found {result.Count} functions in schema [{Schema}]");
         return result;
     }
 
@@ -324,7 +324,7 @@ public class SqlService
         }
         var whereClause = arguments is not null && arguments.TryGetValue("Where", out var whereValue) ? $"{whereValue}" : null;
 
-        using var connection = OpenConnection();
+        using var connection = await OpenConnection();
         var columns = view.DataOutput.Select(p => $"{VIEW_ALIAS}.[{p.Name}]").ToList();
         var topClause = topLimit > 0 ? $"TOP ({topLimit})" : string.Empty;
         var sql = $"SELECT {topClause} {string.Join(", ", columns)} FROM [{Schema}].[{view.Name}] AS {VIEW_ALIAS}";
@@ -353,7 +353,7 @@ public class SqlService
             : " " + string.Join(", ", sqlParams.Select(p => $"{p.ParameterName} = {p.ParameterName}"));
         var sql = $"EXEC [{Schema}].[{procedure.Name}]{assignments}";
 
-        using var connection = OpenConnection();
+        using var connection = await OpenConnection();
         if (procedure.DataOutput.Count != 0)
         {
             using var rdr = await connection.QueryData(sql, sqlParams);
@@ -382,7 +382,7 @@ public class SqlService
             ? $"SELECT * FROM [{Schema}].[{function.Name}]({args})"
             : $"SELECT [{Schema}].[{function.Name}]({args}) AS Result";
 
-        using var connection = OpenConnection();
+        using var connection = await OpenConnection();
         using var rdr = await connection.QueryData(sql, sqlParams);
         return rdr.ToJson();
     }

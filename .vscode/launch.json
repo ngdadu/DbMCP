@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "DbMCP: Launch (project, stdio)",
+      "name": "DbMCP: Launch (project, HTTP, Port5000)",
       "type": "coreclr",
       "request": "launch",
       "program": "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.exe",
@@ -14,11 +14,13 @@
       "justMyCode": true,
       "env": {
         "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
-        "DBMCP_SCHEMA": "mcp"
+        "DBMCP_SCHEMA": "mcp",
+        "DBMCP_HTTP": "true",
+        "ASPNETCORE_URLS": "http://localhost:5000"
       }
     },
     {
-      "name": "DbMCP: Launch (built dll, stdio)",
+      "name": "DbMCP: Launch (built dll, HTTP, Port5001)",
       "type": "coreclr",
       "request": "launch",
       "program": "dotnet",
@@ -33,7 +35,9 @@
       "env": {
         "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
         "DBMCP_SCHEMA": "mcp",
-        "DBMCP_INSTANCE_NAME": "McpCRM.Prebuilt"
+        "DBMCP_INSTANCE_NAME": "McpCRM.Prebuilt",
+        "DBMCP_HTTP": "true",
+        "ASPNETCORE_URLS": "http://localhost:5001"
       }
     },
     {
@@ -46,9 +50,9 @@
   ],
   "compounds": [
     {
-      "name": "DbMCP: Start then attach",
+      "name": "DbMCP: Start HTTP then attach",
       "configurations": [
-        "DbMCP: Launch (project, stdio)",
+        "DbMCP: Launch (project, HTTP, Port5000)",
         "DbMCP: Attach to running process"
       ],
       "stopAll": true

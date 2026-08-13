@@ -15,7 +15,7 @@ public static class SqlHelper
         {
             command.Parameters.AddRange(parameters);
         }
-        await Console.Error.WriteLineAsync($"Executing SQL Query: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
+        await LogWriter.WriteTraceAsync($"Executing SQL Query: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
         return await command.ExecuteReaderAsync();
     }
 
@@ -27,7 +27,7 @@ public static class SqlHelper
         {
             command.Parameters.AddRange(parameters);
         }
-        await Console.Error.WriteLineAsync($"Executing SQL NonQuery: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
+        await LogWriter.WriteTraceAsync($"Executing SQL NonQuery: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
         return await command.ExecuteNonQueryAsync();
     }
 
@@ -39,7 +39,7 @@ public static class SqlHelper
         {
             command.Parameters.AddRange(parameters);
         }
-        await Console.Error.WriteLineAsync($"Executing SQL Scalar: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
+        await LogWriter.WriteTraceAsync($"Executing SQL Scalar: `{commandText}` with {parameters?.Length ?? 0} parameters: {string.Join(", ", parameters?.Select(p => $"{p.ParameterName}={p.Value}") ?? new List<string>())}");
         return await command.ExecuteScalarAsync();
     }
 

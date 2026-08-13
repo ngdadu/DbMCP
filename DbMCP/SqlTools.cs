@@ -40,7 +40,7 @@ public static class SqlTools
     {
         var asmPath = Path.GetDirectoryName(asmLocation) ?? Environment.CurrentDirectory;
         var appName = Path.GetFileNameWithoutExtension(asmLocation);
-        await Console.Error.WriteLineAsync($"searching for icons: {asmPath}\\{appName}-{instanceName}.*.ico");
+        await LogWriter.WriteTraceAsync($"searching for icons: {asmPath}\\{appName}-{instanceName}.*.ico");
 
         var icoFiles = string.IsNullOrEmpty(instanceName)
             ? new List<string>()
@@ -49,7 +49,7 @@ public static class SqlTools
                 .ToList();
         if (icoFiles.Count == 0)
         {
-            await Console.Error.WriteLineAsync($"searching for icons: {asmPath}\\{appName}.*.ico");
+            await LogWriter.WriteTraceAsync($"searching for icons: {asmPath}\\{appName}.*.ico");
             icoFiles = Directory.GetFiles(asmPath, $"{appName}.*.ico")
                 .Union(Directory.GetFiles(asmPath, $"{appName}.ico"))
                 .ToList();
@@ -62,7 +62,7 @@ public static class SqlTools
                 Source = new Uri(f, UriKind.Absolute).AbsoluteUri,
                 MimeType = "image/x-icon"
             }).ToList();
-        await Console.Error.WriteLineAsync($"{iconsList?.Count ?? 0} icons found: {string.Join(", ", iconsList?.Select(f => f.Source) ?? Array.Empty<string>())}");
+        await LogWriter.WriteDebugAsync($"{iconsList?.Count ?? 0} icons found: {string.Join(", ", iconsList?.Select(f => f.Source) ?? Array.Empty<string>())}");
         return iconsList;
     }
 

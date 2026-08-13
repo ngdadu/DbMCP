@@ -11,19 +11,13 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
-        "DBMCP_SCHEMA": "mcp"
+        "DBMCP_SCHEMA": "mcp",        
+        "DBMCP_HTTP": "false"
       }
     },
     "dbmcp-built": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/DbMCP/bin/Debug/net10.0/DbMCP.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "DBMCP_CONNECTION_STR": "Server=localhost;Database=McpData;Integrated Security=true;TrustServerCertificate=true;",
-        "DBMCP_SCHEMA": "mcp",
-        "DBMCP_INSTANCE_NAME": "McpCRM.Prebuilt"
-      }
+      "type": "http",
+      "url": "http://localhost:5000/mcp"
     }
   }
 }
