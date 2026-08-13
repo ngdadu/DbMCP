@@ -13,12 +13,16 @@ namespace DbMCP.Tools;
 
 public static class SqlTools
 {
-    public static async Task<McpServerOptions> BuildServerOptions()
+    private static readonly Lazy<SqlService> _sqlService = new Lazy<SqlService>(() => BuildSqlService(Assembly.GetExecutingAssembly()));
+    public static SqlService SqlService => _sqlService.Value;
+    public static string McpPath => string.IsNullOrEmpty(_sqlService.Value.InstanceName) ? $"/{_sqlService.Value.Schema}" : $"/{_sqlService.Value.InstanceName}";
+    public static async Task<McpServerOptions> BuildServerOptions(bool useHttpTransport = false)
     {
         var asm = Assembly.GetExecutingAssembly();
-        var sqlService = BuildSqlService(asm);
+        var sqlService = _sqlService.Value;
 
-        List<Icon>? iconsList = await BuildIconsList(asm.Location, sqlService.InstanceName);
+        var webAddress = useHttpTransport ? Environment.GetEnvironmentVariable("ASPNETCORE_URLS") : null;
+        List<Icon>? iconsList = await BuildIconsList(asm.Location, sqlService.InstanceName, webAddress);
         var title = await sqlService.GetDatabaseTitle();
         var description = await sqlService.GetDatabaseDescription();
         var options = new McpServerOptions
@@ -36,7 +40,7 @@ public static class SqlTools
         return options;
     }
 
-    private static async Task<List<Icon>?> BuildIconsList(string asmLocation, string instanceName)
+    private static async Task<List<Icon>?> BuildIconsList(string asmLocation, string instanceName, string? webAddress)
     {
         var asmPath = Path.GetDirectoryName(asmLocation) ?? Environment.CurrentDirectory;
         var appName = Path.GetFileNameWithoutExtension(asmLocation);
@@ -59,7 +63,9 @@ public static class SqlTools
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
             .Select(f => new Icon
             {
-                Source = new Uri(f, UriKind.Absolute).AbsoluteUri,
+                Source = string.IsNullOrWhiteSpace(webAddress)
+                    ? new Uri(f, UriKind.Absolute).AbsoluteUri
+                    : new Uri($"{webAddress.TrimEnd('/')}{McpPath}/icons/{Path.GetFileName(f)}", UriKind.Absolute).AbsoluteUri,
                 MimeType = "image/x-icon"
             }).ToList();
         await LogWriter.WriteDebugAsync($"{iconsList?.Count ?? 0} icons found: {string.Join(", ", iconsList?.Select(f => f.Source) ?? Array.Empty<string>())}");

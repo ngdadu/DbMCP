@@ -1,12 +1,13 @@
 ﻿using DbMCP.Tools;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
 var useHttpTransport = bool.TryParse(Environment.GetEnvironmentVariable("DBMCP_HTTP"), out var useHttp) && useHttp;
-var sqlOptions = await SqlTools.BuildServerOptions();
+var sqlOptions = await SqlTools.BuildServerOptions(useHttpTransport);
 
 if (useHttpTransport)
 {
@@ -15,10 +16,17 @@ if (useHttpTransport)
     ConfigureMcpServer(builder.Services, sqlOptions).WithHttpTransport();
 
     var app = builder.Build();
-    app.MapMcp("/mcp");
+    app.MapGet($"{SqlTools.McpPath}/icons/{{iconName}}", (string iconName) =>
+    {
+        var iconPath = Path.Combine(AppContext.BaseDirectory, iconName);
+        return File.Exists(iconPath) && Path.GetExtension(iconName).Equals(".ico", StringComparison.OrdinalIgnoreCase)
+            ? Results.File(iconPath, "image/x-icon")
+            : Results.NotFound();
+    });
+    app.MapMcp(SqlTools.McpPath);
     app.Lifetime.ApplicationStarted.Register(() =>
         app.Logger.LogInformation("DbMCP HTTP endpoint listening at {McpEndpoints}",
-            string.Join(", ", app.Urls.Select(address => $"{address.TrimEnd('/')}/mcp"))));
+            string.Join(", ", app.Urls.Select(address => $"{address.TrimEnd('/')}{SqlTools.McpPath}"))));
     await app.RunAsync();
 }
 else
